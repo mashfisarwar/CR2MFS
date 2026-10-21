@@ -1,7 +1,533 @@
-<!-- Add this opening tag right before the JavaScript code -->
-    <script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCB & Upay Multi-Account Transaction Ledger (Cloud Sync)</title>
+    <style>
+        :root {
+            --ucb-red: #e11d48;
+            --ucb-dark: #0f172a;
+            --upay-gold: #f59e0b;
+            --upay-dark: #1e1b4b;
+            --card-platinum: #334155;
+            --card-gold: #d97706;
+        }
 
-    // Initial Baselines Fallback
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+            margin: 0;
+            padding: 25px 15px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            border-top: 6px solid var(--ucb-red);
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .ucb-logo-img {
+            height: 48px;
+            width: auto;
+        }
+
+        .header-titles h1 {
+            color: #0f172a;
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 800;
+        }
+
+        .header-titles p {
+            margin: 3px 0 0 0;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .sync-badge {
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
+        }
+
+        .config-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .config-section h3 {
+            margin-top: 0;
+            color: #0f172a;
+            margin-bottom: 5px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        .account-card-config {
+            background: #ffffff;
+            padding: 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .account-card-config.plat { border-left: 4px solid var(--card-platinum); }
+        .account-card-config.gold { border-left: 4px solid var(--card-gold); }
+        .account-card-config.upay { border-left: 4px solid var(--upay-gold); }
+
+        .account-card-config h4 {
+            margin-top: 0;
+            color: #1e293b;
+            font-size: 14px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .summary-boxes {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .box {
+            padding: 16px;
+            border-radius: 10px;
+            text-align: left;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            font-size: 12px;
+        }
+
+        .box-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+        }
+
+        .box-value {
+            display: block;
+            font-size: 20px;
+            margin-top: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 700;
+        }
+
+        .bg-plat { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
+        .bg-gold { background: linear-gradient(135deg, #b45309 0%, #d97706 100%); }
+        .bg-upay { background: linear-gradient(135deg, #312e81 0%, #4338ca 100%); }
+        .bg-ucb-savings { background: linear-gradient(135deg, #be123c 0%, #e11d48 100%); }
+        .bg-savings { background: linear-gradient(135deg, #15803d 0%, #16a34a 100%); }
+
+        .input-section {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 6px;
+            color: #475569;
+            text-transform: uppercase;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 13px;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #e11d48;
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+        }
+
+        button {
+            width: 100%;
+            padding: 11px;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-post { background-color: var(--ucb-red); }
+        .btn-post:hover { background-color: #be123c; }
+        
+        .btn-config { 
+            background-color: #0f172a; 
+            margin-top: 10px; 
+            width: auto; 
+            padding: 10px 20px; 
+        }
+        .btn-config:hover { background-color: #1e293b; }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn-export { background-color: #15803d; }
+        .btn-export:hover { background-color: #166534; }
+        
+        .btn-backup { background-color: #0284c7; }
+        .btn-backup:hover { background-color: #0369a1; }
+        
+        .btn-reset { background-color: #dc2626; }
+        .btn-reset:hover { background-color: #b91c1c; }
+
+        .btn-edit { background-color: #f59e0b; color: #fff; padding: 5px 10px; font-size: 11px; border-radius: 4px; width: auto; display: inline-block;}
+        .btn-delete { background-color: #ef4444; color: white; padding: 5px 10px; font-size: 11px; border-radius: 4px; width: auto; display: inline-block;}
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            text-align: right;
+            padding: 12px 14px;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        td.actions-cell { text-align: center; white-space: nowrap; }
+        .fee-cell { color: #dc2626; font-weight: 600; }
+        .save-cell { color: #16a34a; font-weight: 600; }
+        .total-row { font-weight: bold; background-color: #f8fafc; }
+        .text-left { text-align: left; }
+        
+        .tag-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            margin-left: 5px;
+        }
+        .tag-ucb { background: #ffe4e6; color: #be123c; }
+        .tag-upay { background: #e0e7ff; color: #3730a3; }
+    </style>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyANuvB8VOjzTGChkUkOokjUpMl2oUxeLI8",
+            authDomain: "cr2mfs.firebaseapp.com",
+            projectId: "cr2mfs",
+            storageBucket: "cr2mfs.firebasestorage.app",
+            messagingSenderId: "132400460845",
+            appId: "1:132400460845:web:c15546fee35f8e2945b4a4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const ledgerDocRef = doc(db, "ledger", "mainData");
+
+        window.db = db;
+        window.ledgerDocRef = ledgerDocRef;
+        window.setDoc = setDoc;
+        window.onSnapshot = onSnapshot;
+    </script>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-container">
+        <div class="header-left">
+            <svg class="ucb-logo-img" viewBox="0 0 300 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20 20 H50 V60 C50 70 40 80 30 80 C20 80 10 70 10 60 V20 H20 Z" fill="#333333"/>
+                <path d="M70 20 H110 V35 H85 V45 H105 V60 H85 V80 H70 V20 Z" fill="#333333"/>
+                <path d="M120 20 H150 C165 20 175 30 175 42 C175 50 168 57 160 60 C170 63 178 70 178 80 C178 90 165 95 150 95 H120 V20 Z" fill="#333333"/>
+                <path d="M220 10 C250 10 280 35 280 65 C280 80 265 95 240 95 C210 95 190 70 190 40 Z" fill="#E11D48"/>
+                <circle cx="235" cy="35" r="18" fill="#FF4D6D"/>
+            </svg>
+            <div class="header-titles">
+                <h1>Personal Transaction Ledger</h1>
+                <p>UCB Credit Cards & Upay Wallet Optimization Matrix</p>
+            </div>
+        </div>
+        <div class="sync-badge">
+            <div class="sync-dot"></div>
+            <span id="sync-status">Cloud Connected</span>
+        </div>
+    </div>
+
+    <!-- Configuration Panel -->
+    <div class="config-section">
+        <h3><span>⚙️ Account Baselines & Names</span></h3>
+        <p style="font-size: 12px; color: #64748b; margin-top: 0;">
+            Update real-world balances here. Changes automatically sync to Firebase across all devices.
+        </p>
+        
+        <div class="config-grid">
+            <div class="account-card-config plat">
+                <h4>
+                    <span>Card A (Mastercard Platinum)</span>
+                    <span class="tag-badge tag-ucb">Limit: 383,920</span>
+                </h4>
+                <label>Card Name</label>
+                <input type="text" id="cfg-card1-name" value="AKASH CR">
+                <label style="margin-top:8px;">Current Available Limit (BDT)</label>
+                <input type="number" id="cfg-card1-avail" value="129181.29" step="0.01">
+                <label style="margin-top:8px;">Current Outstanding Balance (BDT)</label>
+                <input type="number" id="cfg-card1-out" value="154738.71" step="0.01">
+            </div>
+
+            <div class="account-card-config gold">
+                <h4>
+                    <span>Card B (VISA Gold)</span>
+                    <span class="tag-badge tag-ucb">Limit: 160,000</span>
+                </h4>
+                <label>Card Name</label>
+                <input type="text" id="cfg-card2-name" value="NILIMA CR">
+                <label style="margin-top:8px;">Current Available Limit (BDT)</label>
+                <input type="number" id="cfg-card2-avail" value="96710.70" step="0.01">
+                <label style="margin-top:8px;">Current Outstanding Balance (BDT)</label>
+                <input type="number" id="cfg-card2-out" value="63289.30" step="0.01">
+            </div>
+
+            <div class="account-card-config upay">
+                <h4>
+                    <span>Upay Wallets & Savings</span>
+                    <span class="tag-badge tag-upay">UPAY</span>
+                </h4>
+                <label>Upay A Name</label>
+                <input type="text" id="cfg-upay1-name" value="AKASH UPAY">
+                <label style="margin-top:4px;">Upay A Balance (BDT)</label>
+                <input type="number" id="cfg-upay1-bal" value="3055.00" step="0.01">
+                
+                <label style="margin-top:6px;">Upay B Name</label>
+                <input type="text" id="cfg-upay2-name" value="NILIMA UPAY">
+                <label style="margin-top:4px;">Upay B Balance (BDT)</label>
+                <input type="number" id="cfg-upay2-bal" value="0.00" step="0.01">
+                
+                <label style="margin-top:6px;">UCB Savings Account Balance (BDT)</label>
+                <input type="number" id="cfg-saving-bal" value="50000.00" step="0.01">
+            </div>
+        </div>
+        <button class="btn-config" onclick="setInitialBalances()">Sync Baseline Balances to Cloud</button>
+    </div>
+
+    <!-- Summary Dashboard Boxes -->
+    <div class="summary-boxes">
+        <div class="box bg-plat">
+            <div class="box-title"><span id="box-c1-avail-title">Card A Avail</span><span>PLAT</span></div>
+            <span class="box-value" id="display-card1-avail">0.00</span>
+        </div>
+
+        <div class="box bg-plat">
+            <div class="box-title"><span id="box-c1-out-title">Card A Outstanding</span><span>DUE</span></div>
+            <span class="box-value" id="display-card1-out">0.00</span>
+        </div>
+
+        <div class="box bg-gold">
+            <div class="box-title"><span id="box-c2-avail-title">Card B Avail</span><span>GOLD</span></div>
+            <span class="box-value" id="display-card2-avail">0.00</span>
+        </div>
+
+        <div class="box bg-gold">
+            <div class="box-title"><span id="box-c2-out-title">Card B Outstanding</span><span>DUE</span></div>
+            <span class="box-value" id="display-card2-out">0.00</span>
+        </div>
+
+        <div class="box bg-upay">
+            <div class="box-title"><span id="box-u1-title">Upay A</span><span>UPAY</span></div>
+            <span class="box-value" id="display-upay1">0.00</span>
+        </div>
+
+        <div class="box bg-upay">
+            <div class="box-title"><span id="box-u2-title">Upay B</span><span>UPAY</span></div>
+            <span class="box-value" id="display-upay2">0.00</span>
+        </div>
+
+        <div class="box bg-ucb-savings">
+            <div class="box-title"><span>UCB Savings</span><span>BANK</span></div>
+            <span class="box-value" id="display-saving">0.00</span>
+        </div>
+
+        <div class="box bg-savings">
+            <div class="box-title"><span>Net Interest Savings</span><span>PROFIT</span></div>
+            <span class="box-value" id="display-net-savings">0.00</span>
+        </div>
+    </div>
+
+    <!-- Input Form Section -->
+    <div class="input-section">
+        <h3 id="form-heading" style="margin-top:0; color:#0f172a; font-size:16px;">Log New Transaction</h3>
+        <div class="input-grid">
+            <div>
+                <label for="tx-date">Date</label>
+                <input type="date" id="tx-date">
+            </div>
+            <div>
+                <label for="tx-source">Source Account</label>
+                <select id="tx-source">
+                    <option value="card1">AKASH CR</option>
+                    <option value="card2">NILIMA CR</option>
+                    <option value="wallet1">AKASH UPAY</option>
+                    <option value="wallet2">NILIMA UPAY</option>
+                    <option value="saving">UCB Savings Account</option>
+                </select>
+            </div>
+            <div>
+                <label for="tx-destination">Destination Account</label>
+                <select id="tx-destination">
+                    <option value="card1">AKASH CR</option>
+                    <option value="card2">NILIMA CR</option>
+                    <option value="wallet1">AKASH UPAY</option>
+                    <option value="wallet2">NILIMA UPAY</option>
+                    <option value="saving">UCB Savings Account</option>
+                </select>
+            </div>
+            <div>
+                <label for="tx-amount">Amount (BDT)</label>
+                <input type="number" id="tx-amount" placeholder="0.00" min="0.01" step="0.01">
+            </div>
+            <div>
+                <input type="hidden" id="edit-index" value="-1">
+                <button class="btn-post" id="btn-submit" onclick="handleSubmit()">Post Entry</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Section -->
+    <h3 style="color: #0f172a; font-size: 16px; margin-bottom: 12px;">Transaction Log</h3>
+    <table id="ledger-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th class="text-left">Transaction Flow (Source -> Destination)</th>
+                <th>Amount (BDT)</th>
+                <th>Fee (0.8%)</th>
+                <th>Interest Saved (30 Days)</th>
+                <th>Net Interest Savings</th>
+                <th style="text-align: center; width: 130px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody id="ledger-body">
+            <!-- Dynamically Populated -->
+        </tbody>
+        <tfoot>
+            <tr class="total-row">
+                <td colspan="2" class="text-left">Total Summary:</td>
+                <td id="total-amount">0.00</td>
+                <td id="total-fees" class="fee-cell">0.00</td>
+                <td id="total-gross-savings" class="save-cell">0.00</td>
+                <td id="total-net-savings" class="save-cell">0.00</td>
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Controls -->
+    <div class="action-buttons">
+        <button class="btn-export" onclick="exportToCSV()">Export Ledger to CSV</button>
+        <button class="btn-backup" onclick="exportJSONBackup()">Download Backup (JSON)</button>
+        <button class="btn-reset" onclick="resetDashboard()">Reset Dashboard</button>
+    </div>
+</div>
+
+<script>
     let transactions = [];
     let baselines = {
         card1: { name: "AKASH CR", avail: 129181.29, out: 154738.71 },
@@ -11,7 +537,6 @@
         saving: { name: "UCB Savings Account", bal: 50000.00 }
     };
 
-    // Load Local Cache First (Prevents blank screen on slow connection)
     const localCache = JSON.parse(localStorage.getItem('local_ledger_backup'));
     if (localCache) {
         if (localCache.transactions) transactions = localCache.transactions;
@@ -20,7 +545,6 @@
 
     document.getElementById('tx-date').valueAsDate = new Date();
 
-    // Initialize Cloud Sync Listener
     window.addEventListener('load', () => {
         loadConfigInputs();
         updateUI();
@@ -29,36 +553,31 @@
             if (window.onSnapshot && window.ledgerDocRef) {
                 clearInterval(checkFirebase);
                 
-                // Real-Time Cloud Listener
                 window.onSnapshot(window.ledgerDocRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         if (data.transactions) transactions = data.transactions;
                         if (data.baselines) baselines = data.baselines;
                         
-                        // Update local cache with cloud data
                         localStorage.setItem('local_ledger_backup', JSON.stringify({ transactions, baselines }));
                         
                         loadConfigInputs();
                         updateUI();
                         document.getElementById('sync-status').innerText = 'Cloud Synced';
                     } else {
-                        saveToCloud(); // Save initial data if cloud is empty
+                        saveToCloud();
                     }
                 }, (error) => {
                     console.error("Firebase Snapshot Error:", error);
-                    document.getElementById('sync-status').innerText = 'Sync Error (Check Rules)';
+                    document.getElementById('sync-status').innerText = 'Sync Error';
                 });
             }
         }, 300);
     });
 
-    // Save Function (Saves Locally First, Then Firebase)
     async function saveToCloud() {
-        // 1. Instant local backup safeguard
         localStorage.setItem('local_ledger_backup', JSON.stringify({ transactions, baselines }));
 
-        // 2. Sync to Firebase
         if (window.setDoc && window.ledgerDocRef) {
             try {
                 document.getElementById('sync-status').innerText = 'Syncing...';
@@ -69,8 +588,7 @@
                 document.getElementById('sync-status').innerText = 'Cloud Synced';
             } catch (error) {
                 console.error("Firebase Sync Error:", error);
-                document.getElementById('sync-status').innerText = 'Sync Blocked (Check Rules)';
-                alert("Cloud sync blocked by Firebase rules. Please ensure rules allow read/write!");
+                document.getElementById('sync-status').innerText = 'Sync Blocked';
             }
         }
     }
@@ -356,7 +874,6 @@
         link.click();
         link.remove();
     }
-    </script> 
-    <!-- Add this closing tag right after the code -->
+</script>
 </body>
 </html>
