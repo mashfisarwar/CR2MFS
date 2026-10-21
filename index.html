@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCB & Upay Multi-Account Transaction Ledger</title>
+    <title>UCB & Upay Multi-Account Transaction Ledger (Cloud Sync)</title>
     <style>
         :root {
             --ucb-red: #e11d48;
@@ -65,6 +65,25 @@
             margin: 3px 0 0 0;
             color: #64748b;
             font-size: 13px;
+        }
+
+        .sync-badge {
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #22c55e;
+            border-radius: 50%;
         }
 
         .config-section {
@@ -284,6 +303,32 @@
         .tag-ucb { background: #ffe4e6; color: #be123c; }
         .tag-upay { background: #e0e7ff; color: #3730a3; }
     </style>
+
+    <!-- Firebase SDK Imports -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Your Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyANuvB8VOjzTGChkUkOokjUpMl2oUxeLI8",
+            authDomain: "cr2mfs.firebaseapp.com",
+            projectId: "cr2mfs",
+            storageBucket: "cr2mfs.firebasestorage.app",
+            messagingSenderId: "132400460845",
+            appId: "1:132400460845:web:c15546fee35f8e2945b4a4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const ledgerDocRef = doc(db, "ledger", "mainData");
+
+        window.db = db;
+        window.ledgerDocRef = ledgerDocRef;
+        window.setDoc = setDoc;
+        window.onSnapshot = onSnapshot;
+    </script>
 </head>
 <body>
 
@@ -302,13 +347,17 @@
                 <p>UCB Credit Cards & Upay Wallet Optimization Matrix</p>
             </div>
         </div>
+        <div class="sync-badge">
+            <div class="sync-dot"></div>
+            <span id="sync-status">Cloud Connected</span>
+        </div>
     </div>
 
     <!-- Configuration Panel -->
     <div class="config-section">
         <h3><span>⚙️ Account Baselines & Names</span></h3>
         <p style="font-size: 12px; color: #64748b; margin-top: 0;">
-            Update your real-world balances here. Total Credit Limits are fixed at 383,920 (Card A) and 160,000 (Card B).
+            Update real-world balances here. Changes automatically sync to Firebase across all devices.
         </p>
         
         <div class="config-grid">
@@ -357,7 +406,7 @@
                 <input type="number" id="cfg-saving-bal" value="50000.00" step="0.01">
             </div>
         </div>
-        <button class="btn-config" onclick="setInitialBalances()">Sync Baseline Balances</button>
+        <button class="btn-config" onclick="setInitialBalances()">Sync Baseline Balances to Cloud</button>
     </div>
 
     <!-- Summary Dashboard Boxes -->
@@ -480,11 +529,8 @@
 </div>
 
 <script>
-    const CARD1_LIMIT = 383920;
-    const CARD2_LIMIT = 160000;
-
-    let transactions = JSON.parse(localStorage.getItem('multi_transactions_v8')) || [];
-    let baselines = JSON.parse(localStorage.getItem('multi_baselines_v8')) || {
+    let transactions = [];
+    let baselines = {
         card1: { name: "AKASH CR", avail: 129181.29, out: 154738.71 },
         card2: { name: "NILIMA CR", avail: 96710.70, out: 63289.30 },
         upay1: { name: "AKASH UPAY", bal: 3055.00 },
@@ -493,6 +539,40 @@
     };
 
     document.getElementById('tx-date').valueAsDate = new Date();
+
+    // Initialize Cloud Sync Listener
+    window.addEventListener('load', () => {
+        const checkFirebase = setInterval(() => {
+            if (window.onSnapshot && window.ledgerDocRef) {
+                clearInterval(checkFirebase);
+                
+                // Real-Time Cloud Listener
+                window.onSnapshot(window.ledgerDocRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data.transactions) transactions = data.transactions;
+                        if (data.baselines) baselines = data.baselines;
+                        loadConfigInputs();
+                        updateUI();
+                        document.getElementById('sync-status').innerText = 'Cloud Synced';
+                    } else {
+                        saveToCloud(); // Save initial data if new
+                    }
+                });
+            }
+        }, 300);
+    });
+
+    async function saveToCloud() {
+        if (window.setDoc && window.ledgerDocRef) {
+            document.getElementById('sync-status').innerText = 'Syncing...';
+            await window.setDoc(window.ledgerDocRef, {
+                transactions: transactions,
+                baselines: baselines
+            });
+            document.getElementById('sync-status').innerText = 'Cloud Synced';
+        }
+    }
 
     function loadConfigInputs() {
         document.getElementById('cfg-card1-name').value = baselines.card1.name;
@@ -540,11 +620,6 @@
         return Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    function saveToLocalStorage() {
-        localStorage.setItem('multi_transactions_v8', JSON.stringify(transactions));
-        localStorage.setItem('multi_baselines_v8', JSON.stringify(baselines));
-    }
-
     function setInitialBalances() {
         baselines.card1.name = document.getElementById('cfg-card1-name').value;
         baselines.card1.avail = parseFloat(document.getElementById('cfg-card1-avail').value) || 0;
@@ -562,7 +637,7 @@
 
         baselines.saving.bal = parseFloat(document.getElementById('cfg-saving-bal').value) || 0;
 
-        saveToLocalStorage();
+        saveToCloud();
         updateDropdownLabels();
         updateUI();
     }
@@ -596,7 +671,7 @@
         }
 
         document.getElementById('tx-amount').value = '';
-        saveToLocalStorage();
+        saveToCloud();
         updateUI();
     }
 
@@ -643,20 +718,20 @@
             if ((src === 'wallet1' || src === 'wallet2' || src === 'saving')) {
                 if (dst === 'card1') {
                     fee = amt * 0.008; 
-                    grossSavings = amt * 0.0167; // Card A rate: 1.67% per month (20% p.a.)
+                    grossSavings = amt * 0.0167; // Card A rate: 1.67% monthly (20% p.a.)
                 } else if (dst === 'card2') {
                     fee = amt * 0.008; 
-                    grossSavings = amt * 0.0208; // Card B rate: 2.08% per month (25% p.a.)
+                    grossSavings = amt * 0.0208; // Card B rate: 2.08% monthly (25% p.a.)
                 }
             }
 
             const netSavings = grossSavings - fee;
             const totalDeductionFromSource = amt + fee;
 
-            // Handle Source Account Balance Changes
+            // Source Account Balance Adjustments
             if (src === 'card1') {
-                c1Avail -= amt;   // Using card limit reduces available limit
-                c1Out += amt;     // Increases outstanding due
+                c1Avail -= amt;   
+                c1Out += amt;     
             } else if (src === 'card2') {
                 c2Avail -= amt;
                 c2Out += amt;
@@ -668,13 +743,13 @@
                 savingBal -= totalDeductionFromSource;
             }
 
-            // Handle Destination Account Balance Changes
+            // Destination Account Balance Adjustments
             if (dst === 'card1') {
-                c1Out -= amt;     // Bill payment reduces outstanding due
-                c1Avail += amt;   // Restores available limit
+                c1Out -= amt;     // Decreases due
+                c1Avail += amt;   // Increases available limit
             } else if (dst === 'card2') {
-                c2Out -= amt;     // Bill payment reduces outstanding due
-                c2Avail += amt;   // Restores available limit
+                c2Out -= amt;     // Decreases due
+                c2Avail += amt;   // Increases available limit
             } else if (dst === 'wallet1') {
                 u1Bal += amt;
             } else if (dst === 'wallet2') {
@@ -734,14 +809,15 @@
 
     function deleteTransaction(index) {
         transactions.splice(index, 1);
-        saveToLocalStorage();
+        saveToCloud();
         updateUI();
     }
 
     function resetDashboard() {
-        if (confirm('Are you sure you want to clear all ledger data?')) {
-            localStorage.clear();
-            location.reload();
+        if (confirm('Are you sure you want to clear all cloud ledger data?')) {
+            transactions = [];
+            saveToCloud();
+            updateUI();
         }
     }
 
@@ -780,9 +856,6 @@
         link.click();
         link.remove();
     }
-
-    loadConfigInputs();
-    updateUI();
 </script>
 </body>
 </html>
