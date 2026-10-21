@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UCB & Upay Multi-Account Transaction Ledger (Cloud Sync)</title>
+    <title>UCB & Upay Multi-Account Transaction Ledger</title>
     <style>
         :root {
             --ucb-red: #e11d48;
             --ucb-dark: #0f172a;
             --upay-gold: #f59e0b;
-            --upay-dark: #1e1b4b;
             --card-platinum: #334155;
             --card-gold: #d97706;
         }
@@ -19,64 +18,90 @@
             background-color: #f1f5f9;
             color: #334155;
             margin: 0;
-            padding: 25px 15px;
+            padding: 10px;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
             background: #ffffff;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             border-top: 6px solid var(--ucb-red);
+        }
+
+        @media (min-width: 768px) {
+            body { padding: 25px 15px; }
+            .container { padding: 30px; border-radius: 16px; }
         }
 
         .header-container {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 12px;
             border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 20px;
-            margin-bottom: 25px;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (min-width: 640px) {
+            .header-container {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
         }
 
         .header-left {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
 
         .ucb-logo-img {
-            height: 48px;
+            height: 40px;
             width: auto;
         }
 
         .header-titles h1 {
             color: #0f172a;
             margin: 0;
-            font-size: 24px;
+            font-size: 18px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 800;
         }
 
+        @media (min-width: 768px) {
+            .header-titles h1 { font-size: 24px; }
+        }
+
         .header-titles p {
             margin: 3px 0 0 0;
             color: #64748b;
-            font-size: 13px;
+            font-size: 11px;
+        }
+
+        @media (min-width: 768px) {
+            .header-titles p { font-size: 13px; }
         }
 
         .sync-badge {
             background-color: #dcfce7;
             color: #166534;
-            padding: 6px 12px;
+            padding: 5px 10px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
+            align-self: flex-start;
+        }
+
+        @media (min-width: 640px) {
+            .sync-badge { align-self: auto; }
         }
 
         .sync-dot {
@@ -89,35 +114,35 @@
         .config-section {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
         }
 
         .config-section h3 {
             margin-top: 0;
             color: #0f172a;
             margin-bottom: 5px;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 15px;
         }
 
         .config-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-            margin-bottom: 15px;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 12px;
+            margin-bottom: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .config-grid { grid-template-columns: repeat(3, 1fr); }
         }
 
         .account-card-config {
             background: #ffffff;
-            padding: 16px;
+            padding: 14px;
             border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border-radius: 8px;
         }
 
         .account-card-config.plat { border-left: 4px solid var(--card-platinum); }
@@ -127,9 +152,9 @@
         .account-card-config h4 {
             margin-top: 0;
             color: #1e293b;
-            font-size: 14px;
+            font-size: 13px;
             border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 8px;
+            padding-bottom: 6px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -137,26 +162,30 @@
 
         .summary-boxes {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-            gap: 12px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        @media (min-width: 768px) {
+            .summary-boxes { grid-template-columns: repeat(4, 1fr); }
         }
 
         .box {
-            padding: 16px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 8px;
             text-align: left;
             color: white;
             font-weight: 600;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            font-size: 11px;
         }
 
         .box-title {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 11px;
+            font-size: 10px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             opacity: 0.9;
@@ -164,10 +193,15 @@
 
         .box-value {
             display: block;
-            font-size: 20px;
-            margin-top: 8px;
+            font-size: 15px;
+            margin-top: 6px;
             font-family: 'Courier New', Courier, monospace;
             font-weight: 700;
+            word-break: break-all;
+        }
+
+        @media (min-width: 768px) {
+            .box-value { font-size: 18px; }
         }
 
         .bg-plat { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); }
@@ -179,49 +213,47 @@
         .input-section {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
         }
 
         .input-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            align-items: flex-end;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        @media (min-width: 768px) {
+            .input-grid {
+                grid-template-columns: repeat(5, 1fr);
+                align-items: flex-end;
+            }
         }
 
         label {
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 700;
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
             color: #475569;
             text-transform: uppercase;
         }
 
         input, select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 10px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             box-sizing: border-box;
-            font-size: 13px;
+            font-size: 14px;
             background-color: #f8fafc;
             color: #0f172a;
         }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #e11d48;
-            background-color: #fff;
-            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
-        }
-
         button {
             width: 100%;
-            padding: 11px;
+            padding: 12px;
             color: white;
             border: none;
             border-radius: 8px;
@@ -231,50 +263,58 @@
             transition: all 0.2s;
         }
 
-        .btn-post { background-color: var(--ucb-red); }
-        .btn-post:hover { background-color: #be123c; }
-        
+        .btn-post { background-color: var(--ucb-red); margin-top: 5px; }
+        @media (min-width: 768px) { .btn-post { margin-top: 0; } }
+
         .btn-config { 
             background-color: #0f172a; 
             margin-top: 10px; 
-            width: auto; 
-            padding: 10px 20px; 
+            width: 100%; 
+            padding: 10px; 
         }
-        .btn-config:hover { background-color: #1e293b; }
+        @media (min-width: 640px) { .btn-config { width: auto; } }
 
         .action-buttons {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
+            grid-template-columns: 1fr;
+            gap: 10px;
             margin-top: 20px;
         }
 
-        .btn-export { background-color: #15803d; }
-        .btn-export:hover { background-color: #166534; }
-        
-        .btn-backup { background-color: #0284c7; }
-        .btn-backup:hover { background-color: #0369a1; }
-        
-        .btn-reset { background-color: #dc2626; }
-        .btn-reset:hover { background-color: #b91c1c; }
+        @media (min-width: 640px) {
+            .action-buttons { grid-template-columns: repeat(3, 1fr); }
+        }
 
-        .btn-edit { background-color: #f59e0b; color: #fff; padding: 5px 10px; font-size: 11px; border-radius: 4px; width: auto; display: inline-block;}
-        .btn-delete { background-color: #ef4444; color: white; padding: 5px 10px; font-size: 11px; border-radius: 4px; width: auto; display: inline-block;}
+        .btn-export { background-color: #15803d; }
+        .btn-backup { background-color: #0284c7; }
+        .btn-reset { background-color: #dc2626; }
+
+        .btn-edit { background-color: #f59e0b; color: #fff; padding: 4px 8px; font-size: 10px; border-radius: 4px; width: auto; display: inline-block;}
+        .btn-delete { background-color: #ef4444; color: white; padding: 4px 8px; font-size: 10px; border-radius: 4px; width: auto; display: inline-block;}
+
+        /* Mobile Responsive Table Container */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
             background: #fff;
-            border-radius: 8px;
-            overflow: hidden;
+            min-width: 650px;
         }
 
         th, td {
-            border: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            border-right: 1px solid #f1f5f9;
             text-align: right;
-            padding: 12px 14px;
-            font-size: 13px;
+            padding: 10px 12px;
+            font-size: 12px;
         }
 
         th {
@@ -282,7 +322,7 @@
             color: #475569;
             font-weight: 700;
             text-transform: uppercase;
-            font-size: 11px;
+            font-size: 10px;
             letter-spacing: 0.5px;
         }
 
@@ -294,11 +334,11 @@
         
         .tag-badge {
             display: inline-block;
-            padding: 2px 6px;
+            padding: 2px 5px;
             border-radius: 4px;
-            font-size: 10px;
+            font-size: 9px;
             font-weight: 700;
-            margin-left: 5px;
+            margin-left: 4px;
         }
         .tag-ucb { background: #ffe4e6; color: #be123c; }
         .tag-upay { background: #e0e7ff; color: #3730a3; }
@@ -309,7 +349,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyANuvB8VOjzTGChkUkOokjUpMl2oUxeLI8",
             authDomain: "cr2mfs.firebaseapp.com",
@@ -342,8 +381,8 @@
                 <circle cx="235" cy="35" r="18" fill="#FF4D6D"/>
             </svg>
             <div class="header-titles">
-                <h1>Personal Transaction Ledger</h1>
-                <p>UCB Credit Cards & Upay Wallet Optimization Matrix</p>
+                <h1>Transaction Ledger</h1>
+                <p>UCB Credit Cards & Upay Optimization</p>
             </div>
         </div>
         <div class="sync-badge">
@@ -355,53 +394,53 @@
     <!-- Configuration Panel -->
     <div class="config-section">
         <h3><span>⚙️ Account Baselines & Names</span></h3>
-        <p style="font-size: 12px; color: #64748b; margin-top: 0;">
-            Update real-world balances here. Changes automatically sync to Firebase across all devices.
+        <p style="font-size: 11px; color: #64748b; margin-top: 0;">
+            Update balances here. Syncs across all devices instantly.
         </p>
         
         <div class="config-grid">
             <div class="account-card-config plat">
                 <h4>
-                    <span>Card A (Mastercard Platinum)</span>
+                    <span>Card A (Platinum)</span>
                     <span class="tag-badge tag-ucb">Limit: 383,920</span>
                 </h4>
                 <label>Card Name</label>
                 <input type="text" id="cfg-card1-name" value="AKASH CR">
-                <label style="margin-top:8px;">Current Available Limit (BDT)</label>
+                <label style="margin-top:6px;">Available Limit (BDT)</label>
                 <input type="number" id="cfg-card1-avail" value="129181.29" step="0.01">
-                <label style="margin-top:8px;">Current Outstanding Balance (BDT)</label>
+                <label style="margin-top:6px;">Outstanding (BDT)</label>
                 <input type="number" id="cfg-card1-out" value="154738.71" step="0.01">
             </div>
 
             <div class="account-card-config gold">
                 <h4>
-                    <span>Card B (VISA Gold)</span>
+                    <span>Card B (Gold)</span>
                     <span class="tag-badge tag-ucb">Limit: 160,000</span>
                 </h4>
                 <label>Card Name</label>
                 <input type="text" id="cfg-card2-name" value="NILIMA CR">
-                <label style="margin-top:8px;">Current Available Limit (BDT)</label>
+                <label style="margin-top:6px;">Available Limit (BDT)</label>
                 <input type="number" id="cfg-card2-avail" value="96710.70" step="0.01">
-                <label style="margin-top:8px;">Current Outstanding Balance (BDT)</label>
+                <label style="margin-top:6px;">Outstanding (BDT)</label>
                 <input type="number" id="cfg-card2-out" value="63289.30" step="0.01">
             </div>
 
             <div class="account-card-config upay">
                 <h4>
-                    <span>Upay Wallets & Savings</span>
+                    <span>Wallets & Savings</span>
                     <span class="tag-badge tag-upay">UPAY</span>
                 </h4>
                 <label>Upay A Name</label>
                 <input type="text" id="cfg-upay1-name" value="AKASH UPAY">
-                <label style="margin-top:4px;">Upay A Balance (BDT)</label>
+                <label style="margin-top:4px;">Upay A Balance</label>
                 <input type="number" id="cfg-upay1-bal" value="3055.00" step="0.01">
                 
-                <label style="margin-top:6px;">Upay B Name</label>
+                <label style="margin-top:4px;">Upay B Name</label>
                 <input type="text" id="cfg-upay2-name" value="NILIMA UPAY">
-                <label style="margin-top:4px;">Upay B Balance (BDT)</label>
+                <label style="margin-top:4px;">Upay B Balance</label>
                 <input type="number" id="cfg-upay2-bal" value="0.00" step="0.01">
                 
-                <label style="margin-top:6px;">UCB Savings Account Balance (BDT)</label>
+                <label style="margin-top:4px;">UCB Savings Balance</label>
                 <input type="number" id="cfg-saving-bal" value="50000.00" step="0.01">
             </div>
         </div>
@@ -446,14 +485,14 @@
         </div>
 
         <div class="box bg-savings">
-            <div class="box-title"><span>Net Interest Savings</span><span>PROFIT</span></div>
+            <div class="box-title"><span>Net Savings</span><span>PROFIT</span></div>
             <span class="box-value" id="display-net-savings">0.00</span>
         </div>
     </div>
 
     <!-- Input Form Section -->
     <div class="input-section">
-        <h3 id="form-heading" style="margin-top:0; color:#0f172a; font-size:16px;">Log New Transaction</h3>
+        <h3 id="form-heading" style="margin-top:0; color:#0f172a; font-size:15px;">Log New Transaction</h3>
         <div class="input-grid">
             <div>
                 <label for="tx-date">Date</label>
@@ -485,43 +524,45 @@
             </div>
             <div>
                 <input type="hidden" id="edit-index" value="-1">
-                <button class="btn-post" id="btn-submit" onclick="handleSubmit()">Post Entry</button>
+                <button class="btn-post" onclick="handleSubmit()">Post Entry</button>
             </div>
         </div>
     </div>
 
-    <!-- Table Section -->
-    <h3 style="color: #0f172a; font-size: 16px; margin-bottom: 12px;">Transaction Log</h3>
-    <table id="ledger-table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th class="text-left">Transaction Flow (Source -> Destination)</th>
-                <th>Amount (BDT)</th>
-                <th>Fee (0.8%)</th>
-                <th>Interest Saved (30 Days)</th>
-                <th>Net Interest Savings</th>
-                <th style="text-align: center; width: 130px;">Actions</th>
-            </tr>
-        </thead>
-        <tbody id="ledger-body">
-            <!-- Dynamically Populated -->
-        </tbody>
-        <tfoot>
-            <tr class="total-row">
-                <td colspan="2" class="text-left">Total Summary:</td>
-                <td id="total-amount">0.00</td>
-                <td id="total-fees" class="fee-cell">0.00</td>
-                <td id="total-gross-savings" class="save-cell">0.00</td>
-                <td id="total-net-savings" class="save-cell">0.00</td>
-                <td></td>
-            </tr>
-        </tfoot>
-    </table>
+    <!-- Table Section with Mobile Horizontal Scroll -->
+    <h3 style="color: #0f172a; font-size: 15px; margin-bottom: 8px;">Transaction Log</h3>
+    <div class="table-responsive">
+        <table id="ledger-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th class="text-left">Flow (Source -> Dest)</th>
+                    <th>Amount</th>
+                    <th>Fee (0.8%)</th>
+                    <th>Saved (30D)</th>
+                    <th>Net Saved</th>
+                    <th style="text-align: center; width: 110px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="ledger-body">
+                <!-- Dynamically Populated -->
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="2" class="text-left">Total:</td>
+                    <td id="total-amount">0.00</td>
+                    <td id="total-fees" class="fee-cell">0.00</td>
+                    <td id="total-gross-savings" class="save-cell">0.00</td>
+                    <td id="total-net-savings" class="save-cell">0.00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 
     <!-- Controls -->
     <div class="action-buttons">
-        <button class="btn-export" onclick="exportToCSV()">Export Ledger to CSV</button>
+        <button class="btn-export" onclick="exportToCSV()">Export CSV</button>
         <button class="btn-backup" onclick="exportJSONBackup()">Download Backup (JSON)</button>
         <button class="btn-reset" onclick="resetDashboard()">Reset Dashboard</button>
     </div>
