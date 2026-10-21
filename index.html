@@ -1,4 +1,7 @@
-// Initial Baselines Fallback
+<!-- Add this opening tag right before the JavaScript code -->
+    <script>
+
+    // Initial Baselines Fallback
     let transactions = [];
     let baselines = {
         card1: { name: "AKASH CR", avail: 129181.29, out: 154738.71 },
@@ -216,17 +219,16 @@
             if ((src === 'wallet1' || src === 'wallet2' || src === 'saving')) {
                 if (dst === 'card1') {
                     fee = amt * 0.008; 
-                    grossSavings = amt * 0.0167; // Card A rate: 1.67% monthly
+                    grossSavings = amt * 0.0167;
                 } else if (dst === 'card2') {
                     fee = amt * 0.008; 
-                    grossSavings = amt * 0.0208; // Card B rate: 2.08% monthly
+                    grossSavings = amt * 0.0208;
                 }
             }
 
             const netSavings = grossSavings - fee;
             const totalDeductionFromSource = amt + fee;
 
-            // Source Account Balance Adjustments
             if (src === 'card1') {
                 c1Avail -= amt;   
                 c1Out += amt;     
@@ -241,7 +243,6 @@
                 savingBal -= totalDeductionFromSource;
             }
 
-            // Destination Account Balance Adjustments
             if (dst === 'card1') {
                 c1Out -= amt;     
                 c1Avail += amt;   
@@ -355,3 +356,7 @@
         link.click();
         link.remove();
     }
+    </script> 
+    <!-- Add this closing tag right after the code -->
+</body>
+</html>
